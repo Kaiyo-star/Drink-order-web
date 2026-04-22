@@ -1,0 +1,62 @@
+{
+  "nextId": 4,
+  "orders": [
+    {
+      "id": 1,
+      "customerName": "Kaikal",
+      "roomNumber": "2222",
+      "drinkId": "anggur",
+      "drinkName": "Anggur",
+      "orderType": "room",
+      "unitPrice": 3,
+      "quantity": 1,
+      "totalAmount": 3,
+      "status": "paid",
+      "createdAt": "2026-04-22T14:46:14.618Z",
+      "updatedAt": "2026-04-22T14:47:22.347Z"
+    },
+    {
+      "id": 2,
+      "customerName": "Kaikal",
+      "roomNumber": "2222",
+      "drinkId": "anggur",
+      "drinkName": "Anggur",
+      "orderType": "room",
+      "unitPrice": 3,
+      "quantity": 1,
+      "totalAmount": 3,
+      "status": "paid",
+      "createdAt": "2026-04-22T14:46:14.618Z",
+      "updatedAt": "2026-04-22T14:47:28.881Z"
+    },
+    {
+      "id": 3,
+      "customerName": "Kaikal",
+      "roomNumber": "2222",
+      "drinkId": "anggur",
+      "drinkName": "Anggur",
+      "orderType": "room",
+      "unitPrice": 3,
+      "quantity": 1,
+      "totalAmount": 3,
+      "status": "cancelled",
+      "createdAt": "2026-04-22T14:46:14.618Z",
+      "updatedAt": "2026-04-22T14:47:31.394Z"
+    }
+  ],
+  "stock": {
+    "anggur": 108,
+    "aiskrim-soda": 0,
+    "sarsi": 0,
+    "oren": 0,
+    "buah-buahan": 0
+  },
+  "dailyRecords": [
+    {
+      "date": "2026-04-22",
+      "totalSales": 2,
+      "totalProfit": 6,
+      "totalDebt": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "drink-ordering-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Drink ordering website with customer and admin views",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

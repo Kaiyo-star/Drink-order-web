@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drink Orders Admin</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero">
+        <article class="hero-card">
+          <span class="eyebrow">Owner Dashboard</span>
+          <h1>Track orders, profit, and debt in one place.</h1>
+          <p class="lead">
+            Incoming orders appear below. Use the buttons at the end of each
+            order to move it into paid profit or unpaid debt.
+          </p>
+        </article>
+
+        <article class="hero-card">
+          <div class="panel-header">
+            <div>
+              <h2>Quick Access</h2>
+              <p class="panel-subtitle">
+                Share the customer page link with your customers.
+              </p>
+            </div>
+          </div>
+          <p class="lead">
+            Customer page: <strong id="customerLink"></strong><br />
+            Admin page refreshes automatically every 3 seconds.
+          </p>
+        </article>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat-card">
+          <span class="stat-label">Pending Orders</span>
+          <strong class="stat-value" id="pendingCount">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Total Profit</span>
+          <strong class="stat-value money" id="profitAmount">RM 0.00</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">Outstanding Debt</span>
+          <strong class="stat-value money" id="debtAmount">RM 0.00</strong>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Stock & Daily Controls</h2>
+            <p class="panel-subtitle">
+              Update stock, save daily data, and reset system data.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid" id="stockForm">
+          <div class="field">
+            <label>Anggur</label
+            ><input id="stock-anggur" type="number" min="0" value="0" />
+          </div>
+          <div class="field">
+            <label>Aiskrim Soda</label
+            ><input id="stock-aiskrim-soda" type="number" min="0" value="0" />
+          </div>
+          <div class="field">
+            <label>Sarsi</label
+            ><input id="stock-sarsi" type="number" min="0" value="0" />
+          </div>
+          <div class="field">
+            <label>Oren</label
+            ><input id="stock-oren" type="number" min="0" value="0" />
+          </div>
+          <div class="field">
+            <label>Buah Buahan</label
+            ><input id="stock-buah-buahan" type="number" min="0" value="0" />
+          </div>
+        </div>
+
+        <div
+          class="action-row"
+          style="justify-content: flex-start; margin-top: 18px"
+        >
+          <button class="secondary-btn" type="button" id="saveStockBtn">
+            Save Stock
+          </button>
+          <button class="primary-btn" type="button" id="saveDailyBtn">
+            Save Daily Data
+          </button>
+          <button class="danger-btn" type="button" id="resetSalesBtn">
+            Reset Sale
+          </button>
+          <button class="danger-btn" type="button" id="resetDailyBtn">
+            Reset Daily Data
+          </button>
+          <button class="danger-btn" type="button" id="resetStockBtn">
+            Reset Stock
+          </button>
+        </div>
+
+        <p id="adminStatusText" class="status-text" aria-live="polite"></p>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <span class="stat-label">Jumlah Jualan Hari Ini</span>
+            <strong class="stat-value" id="dailySales">0</strong>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Untung Hari Ini</span>
+            <strong class="stat-value money" id="dailyProfit">RM 0.00</strong>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Penghutang Hari Ini</span>
+            <strong class="stat-value money" id="dailyDebt">RM 0.00</strong>
+          </article>
+        </div>
+
+        <div class="order-list" id="dailyRecordsList"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Walk-In Sale</h2>
+            <p class="panel-subtitle">
+              Masukkan jualan pelanggan walk-in di sini.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="field">
+            <label for="walkInCustomerName">Customer Name</label>
+            <input id="walkInCustomerName" type="text" placeholder="Walk-in" />
+          </div>
+
+          <div class="field">
+            <label for="walkInDrinkId">Drink Flavor</label>
+            <select id="walkInDrinkId"></select>
+          </div>
+
+          <div class="field">
+            <label for="walkInQuantity">Quantity</label>
+            <input
+              id="walkInQuantity"
+              type="number"
+              min="1"
+              max="50"
+              value="1"
+            />
+          </div>
+        </div>
+
+        <div class="summary-bar">
+          <div>
+            <span class="summary-label">Walk-In Total</span>
+            <strong class="summary-value" id="walkInTotalAmount"
+              >RM 0.00</strong
+            >
+          </div>
+          <button class="primary-btn" type="button" id="addWalkInBtn">
+            Add Walk-In Sale
+          </button>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <div class="section-grid">
+          <article class="panel">
+            <h2 class="section-heading">Incoming Orders</h2>
+            <p class="section-note">
+              Each new order starts here until you mark it paid or unpaid.
+            </p>
+            <div class="order-list" id="pendingOrders"></div>
+          </article>
+        </div>
+
+        <div class="section-grid">
+          <article class="panel">
+            <h2 class="section-heading">Profit Section</h2>
+            <p class="section-note">
+              Paid orders are counted here with customer count, items sold, and
+              total profit.
+            </p>
+            <div class="stats-grid">
+              <article class="stat-card">
+                <span class="stat-label">Paid Customers</span>
+                <strong class="stat-value" id="paidCustomers">0</strong>
+              </article>
+              <article class="stat-card">
+                <span class="stat-label">Items Sold</span>
+                <strong class="stat-value" id="itemsSold">0</strong>
+              </article>
+              <article class="stat-card">
+                <span class="stat-label">Profit Earned</span>
+                <strong class="stat-value money" id="totalProfit"
+                  >RM 0.00</strong
+                >
+              </article>
+            </div>
+            <div class="order-list" id="paidOrders"></div>
+          </article>
+
+          <article class="panel">
+            <h2 class="section-heading">Debt Section</h2>
+            <p class="section-note">
+              Unpaid orders move here with customer count, debt amount, and
+              unpaid item totals.
+            </p>
+            <div class="stats-grid">
+              <article class="stat-card">
+                <span class="stat-label">Debt Customers</span>
+                <strong class="stat-value" id="debtCustomers">0</strong>
+              </article>
+              <article class="stat-card">
+                <span class="stat-label">Unpaid Items</span>
+                <strong class="stat-value" id="unpaidItems">0</strong>
+              </article>
+              <article class="stat-card">
+                <span class="stat-label">Debt Amount</span>
+                <strong class="stat-value money" id="totalDebt">RM 0.00</strong>
+              </article>
+            </div>
+            <div class="order-list" id="debtOrders"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="/admin.js"></script>
+  </body>
+</html>
