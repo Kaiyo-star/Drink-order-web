@@ -43,32 +43,65 @@ function updateTotals() {
 }
 
 function changeQuantity(drinkId, change) {
+  const drink = drinks.find((item) => item.id === drinkId);
+
+  if (!drink) {
+    return;
+  }
+
   const current = cart[drinkId] || 0;
+  const maxStock = Number(drink.stock || 0);
+
+  if (change > 0 && maxStock <= current) {
+    statusText.textContent = `${drink.name} sudah sold out atau capai stock maksimum.`;
+    statusText.className = "status-text error";
+    return;
+  }
+
   const next = Math.max(0, current + change);
   cart[drinkId] = next;
   renderDrinks();
   updateTotals();
+  statusText.textContent = "";
+  statusText.className = "status-text";
 }
 
 function renderDrinks() {
   drinkCards.innerHTML = drinks
     .map((drink) => {
       const quantity = cart[drink.id] || 0;
+      const stock = Number(drink.stock || 0);
+      const isSoldOut = stock <= 0;
 
       return `
-        <article class="menu-item ${quantity > 0 ? "selected" : ""}">
+        <article class="menu-item ${quantity > 0 ? "selected" : ""} ${isSoldOut ? "sold-out" : ""}">
           <div class="drink-card-top">
             <div>
               <strong>${drink.name}</strong>
               <p>${formatCurrency(drink.roomPrice)}</p>
+              <p class="stock-text">${isSoldOut ? "Sold Out" : `Stock: ${stock}`}</p>
             </div>
             <span class="drink-badge">${quantity}</span>
           </div>
 
           <div class="action-row" style="justify-content:flex-start; margin-top: 12px;">
-            <button type="button" class="danger-btn" data-minus="${drink.id}">-</button>
+            <button
+              type="button"
+              class="danger-btn"
+              data-minus="${drink.id}"
+              ${quantity === 0 ? "disabled" : ""}
+            >
+              -
+            </button>
             <strong style="min-width:40px; text-align:center;">${quantity}</strong>
-            <button type="button" class="success-btn" data-plus="${drink.id}">+</button>
+            <button
+              type="button"
+              class="success-btn"
+              data-plus="${drink.id}"
+              ${isSoldOut ? "disabled" : ""}
+            >
+              +
+            </button>
           </div>
         </article>
       `;
@@ -166,12 +199,12 @@ orderForm.addEventListener("submit", async (event) => {
 
     cart = {};
     orderForm.reset();
-    renderDrinks();
-    updateTotals();
     stepTwo.style.display = "none";
     stepOne.style.display = "block";
     stepPillTwo.classList.remove("active");
     stepPillOne.classList.add("active");
+
+    await loadMenu();
 
     statusText.textContent = `Order berjaya dihantar. ${data.summary.totalItems} item, jumlah ${formatCurrency(data.summary.totalAmount)}.`;
     statusText.className = "status-text success";

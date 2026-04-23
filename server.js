@@ -72,10 +72,17 @@ function getDrinkById(drinkId) {
   return DRINKS.find((drink) => drink.id === drinkId);
 }
 
+function getActiveOrders(orders) {
+  return orders.filter((order) => order.status !== "cancelled");
+}
+
 function getOrderStats(orders) {
-  const paidOrders = orders.filter((order) => order.status === "paid");
-  const debtOrders = orders.filter((order) => order.status === "debt");
-  const pendingOrders = orders.filter((order) => order.status === "pending");
+  const activeOrders = getActiveOrders(orders);
+  const paidOrders = activeOrders.filter((order) => order.status === "paid");
+  const debtOrders = activeOrders.filter((order) => order.status === "debt");
+  const pendingOrders = activeOrders.filter(
+    (order) => order.status === "pending",
+  );
 
   return {
     pendingCount: pendingOrders.length,
@@ -105,8 +112,9 @@ function getOrderStats(orders) {
 }
 
 function getDailySummary() {
-  const paidOrders = state.orders.filter((order) => order.status === "paid");
-  const debtOrders = state.orders.filter((order) => order.status === "debt");
+  const activeOrders = getActiveOrders(state.orders);
+  const paidOrders = activeOrders.filter((order) => order.status === "paid");
+  const debtOrders = activeOrders.filter((order) => order.status === "debt");
 
   return {
     date: new Date().toISOString().slice(0, 10),
@@ -233,16 +241,15 @@ async function serveStaticFile(reqPath, res) {
 
 async function handleCreateOrder(req, res) {
   const body = await parseRequestBody(req);
-  const customerName = sanitizeText(body.customerName);
+  const customerName = sanitizeText(body.customerName) || "Customer";
   const roomNumber = sanitizeText(body.roomNumber);
   const rawItems = Array.isArray(body.items)
     ? body.items
     : [{ drinkId: body.drinkId, quantity: body.quantity }];
 
-  if (!customerName || !roomNumber || rawItems.length === 0) {
+  if (!roomNumber || rawItems.length === 0) {
     sendJson(res, 400, {
-      error:
-        "Please provide a valid name, room number, and at least one cart item.",
+      error: "Please provide a valid room number and at least one cart item.",
     });
     return;
   }
@@ -263,6 +270,15 @@ async function handleCreateOrder(req, res) {
     ) {
       sendJson(res, 400, {
         error: "Each cart item must include a valid drink flavor and quantity.",
+      });
+      return;
+    }
+
+    const currentStock = Number(state.stock[drink.id] || 0);
+
+    if (currentStock < quantity) {
+      sendJson(res, 400, {
+        error: `${drink.name} sudah habis atau stock tidak mencukupi.`,
       });
       return;
     }
@@ -357,7 +373,9 @@ async function handleUpdateOrder(req, res, orderId) {
   const nextStatus = sanitizeText(body.status);
 
   if (!["paid", "debt", "cancelled"].includes(nextStatus)) {
-    sendJson(res, 400, { error: "Status must be paid, debt or cancelled." });
+    sendJson(res, 400, {
+      error: "Status must be paid, debt or cancelled.",
+    });
     return;
   }
 
@@ -415,7 +433,10 @@ async function handleUpdateStock(req, res) {
   }
 
   await persistState();
-  sendJson(res, 200, { message: "Stock updated.", stock: state.stock });
+  sendJson(res, 200, {
+    message: "Stock updated.",
+    stock: state.stock,
+  });
 }
 
 async function handleSaveDailyRecord(req, res) {
@@ -446,12 +467,20 @@ async function handleResetDailyRecords(req, res) {
 async function handleResetStock(req, res) {
   state.stock = { ...DEFAULT_STOCK };
   await persistState();
-  sendJson(res, 200, { message: "Stock reset.", stock: state.stock });
+  sendJson(res, 200, {
+    message: "Stock reset.",
+    stock: state.stock,
+  });
 }
 
 async function handleApi(req, res, url) {
   if (req.method === "GET" && url.pathname === "/api/menu") {
-    sendJson(res, 200, { drinks: DRINKS });
+    sendJson(res, 200, {
+      drinks: DRINKS.map((drink) => ({
+        ...drink,
+        stock: Number(state.stock[drink.id] || 0),
+      })),
+    });
     return true;
   }
 
