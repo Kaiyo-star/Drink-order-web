@@ -125,7 +125,6 @@ backStepBtn.addEventListener("click", () => {
 orderForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const customerType = orderForm.customerType.value.trim();
   const roomNumber = orderForm.roomNumber.value.trim();
   const items = getSelectedItems();
 
@@ -135,8 +134,8 @@ orderForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  if (!customerType || !roomNumber) {
-    statusText.textContent = "Sila pilih kategori dan isi no. bilik.";
+  if (!roomNumber) {
+    statusText.textContent = "Sila isi no. bilik.";
     statusText.className = "status-text error";
     return;
   }
@@ -145,7 +144,7 @@ orderForm.addEventListener("submit", async (event) => {
   statusText.className = "status-text";
 
   const payload = {
-    customerName: customerType,
+    customerName: "Customer",
     roomNumber,
     items,
   };
