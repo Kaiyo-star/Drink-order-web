@@ -1,15 +1,17 @@
-const menuGrid = document.getElementById("menuGrid");
 const orderForm = document.getElementById("orderForm");
-const drinkSelect = document.getElementById("drinkId");
-const quantityInput = document.getElementById("quantity");
-const totalAmount = document.getElementById("totalAmount");
+const drinkCards = document.getElementById("drinkCards");
 const cartTotalAmount = document.getElementById("cartTotalAmount");
-const cartItems = document.getElementById("cartItems");
-const addToCartBtn = document.getElementById("addToCartBtn");
+const finalTotalAmount = document.getElementById("finalTotalAmount");
+const nextStepBtn = document.getElementById("nextStepBtn");
+const backStepBtn = document.getElementById("backStepBtn");
+const stepOne = document.getElementById("stepOne");
+const stepTwo = document.getElementById("stepTwo");
+const stepPillOne = document.getElementById("stepPillOne");
+const stepPillTwo = document.getElementById("stepPillTwo");
 const statusText = document.getElementById("statusText");
 
 let drinks = [];
-let cart = [];
+let cart = {};
 
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-MY", {
@@ -18,138 +20,134 @@ function formatCurrency(value) {
   }).format(Number(value) || 0);
 }
 
-function renderMenu() {
-  menuGrid.innerHTML = drinks
-    .map(
-      (drink) => `
-        <article class="menu-item">
-          <strong>${drink.name}</strong>
-          <p>${formatCurrency(drink.roomPrice)}</p>
-
-        </article>
-      `,
-    )
-    .join("");
-
-  drinkSelect.innerHTML = drinks
-    .map((drink) => `<option value="${drink.id}">${drink.name}</option>`)
-    .join("");
+function getTotalAmount() {
+  return drinks.reduce((sum, drink) => {
+    const quantity = cart[drink.id] || 0;
+    return sum + drink.roomPrice * quantity;
+  }, 0);
 }
 
-function getCurrentTotal() {
-  const selectedDrink = drinks.find((drink) => drink.id === drinkSelect.value);
-  const quantity = Number(quantityInput.value) || 0;
-  return selectedDrink ? selectedDrink.roomPrice * quantity : 0;
+function getSelectedItems() {
+  return drinks
+    .filter((drink) => (cart[drink.id] || 0) > 0)
+    .map((drink) => ({
+      drinkId: drink.id,
+      quantity: cart[drink.id],
+    }));
 }
 
-function updateTotal() {
-  totalAmount.textContent = formatCurrency(getCurrentTotal());
+function updateTotals() {
+  const total = getTotalAmount();
+  cartTotalAmount.textContent = formatCurrency(total);
+  finalTotalAmount.textContent = formatCurrency(total);
 }
 
-function getCartTotal() {
-  return cart.reduce((sum, item) => sum + item.totalAmount, 0);
+function changeQuantity(drinkId, change) {
+  const current = cart[drinkId] || 0;
+  const next = Math.max(0, current + change);
+  cart[drinkId] = next;
+  renderDrinks();
+  updateTotals();
 }
 
-function renderCart() {
-  if (!cart.length) {
-    cartItems.innerHTML = `<div class="empty-state">Cart masih kosong.</div>`;
-  } else {
-    cartItems.innerHTML = cart
-      .map(
-        (item, index) => `
-          <article class="order-card">
-            <div class="order-top">
-              <div>
-                <h3 class="order-title">${item.drinkName}</h3>
-                <p class="order-meta">
-                  Quantity: ${item.quantity}<br />
-                  Total: ${formatCurrency(item.totalAmount)}
-                </p>
-              </div>
-              <button class="danger-btn" type="button" data-remove-index="${index}">Remove</button>
+function renderDrinks() {
+  drinkCards.innerHTML = drinks
+    .map((drink) => {
+      const quantity = cart[drink.id] || 0;
+
+      return `
+        <article class="menu-item ${quantity > 0 ? "selected" : ""}">
+          <div class="drink-card-top">
+            <div>
+              <strong>${drink.name}</strong>
+              <p>${formatCurrency(drink.roomPrice)}</p>
             </div>
-          </article>
-        `,
-      )
-      .join("");
-  }
+            <span class="drink-badge">${quantity}</span>
+          </div>
 
-  cartTotalAmount.textContent = formatCurrency(getCartTotal());
+          <div class="action-row" style="justify-content:flex-start; margin-top: 12px;">
+            <button type="button" class="danger-btn" data-minus="${drink.id}">-</button>
+            <strong style="min-width:40px; text-align:center;">${quantity}</strong>
+            <button type="button" class="success-btn" data-plus="${drink.id}">+</button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 async function loadMenu() {
   const response = await fetch("/api/menu");
   const data = await response.json();
   drinks = data.drinks || [];
-  renderMenu();
-  updateTotal();
-  renderCart();
+  renderDrinks();
+  updateTotals();
 }
 
-orderForm.addEventListener("input", updateTotal);
+document.addEventListener("click", (event) => {
+  const plusBtn = event.target.closest("[data-plus]");
+  const minusBtn = event.target.closest("[data-minus]");
 
-addToCartBtn.addEventListener("click", () => {
-  const selectedDrink = drinks.find((drink) => drink.id === drinkSelect.value);
-  const quantity = Number(quantityInput.value);
+  if (plusBtn) {
+    changeQuantity(plusBtn.dataset.plus, 1);
+    return;
+  }
 
-  if (!selectedDrink || !Number.isInteger(quantity) || quantity < 1) {
-    statusText.textContent = "Sila pilih minuman dan quantity yang sah.";
+  if (minusBtn) {
+    changeQuantity(minusBtn.dataset.minus, -1);
+  }
+});
+
+nextStepBtn.addEventListener("click", () => {
+  if (!getSelectedItems().length) {
+    statusText.textContent = "Pilih sekurang-kurangnya satu minuman.";
     statusText.className = "status-text error";
     return;
   }
 
-  cart.push({
-    drinkId: selectedDrink.id,
-    drinkName: selectedDrink.name,
-    quantity,
-    totalAmount: Number((selectedDrink.roomPrice * quantity).toFixed(2)),
-  });
-
-  renderCart();
-  quantityInput.value = 1;
-  updateTotal();
-  statusText.textContent = `${selectedDrink.name} telah ditambah ke cart.`;
-  statusText.className = "status-text success";
+  stepOne.style.display = "none";
+  stepTwo.style.display = "block";
+  stepPillOne.classList.remove("active");
+  stepPillTwo.classList.add("active");
+  statusText.textContent = "";
+  statusText.className = "status-text";
 });
 
-document.addEventListener("click", (event) => {
-  const removeButton = event.target.closest("[data-remove-index]");
-  if (!removeButton) return;
-
-  const index = Number(removeButton.dataset.removeIndex);
-  cart.splice(index, 1);
-  renderCart();
+backStepBtn.addEventListener("click", () => {
+  stepTwo.style.display = "none";
+  stepOne.style.display = "block";
+  stepPillTwo.classList.remove("active");
+  stepPillOne.classList.add("active");
+  statusText.textContent = "";
+  statusText.className = "status-text";
 });
 
 orderForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const customerName = orderForm.customerName.value.trim();
+  const customerType = orderForm.customerType.value.trim();
   const roomNumber = orderForm.roomNumber.value.trim();
+  const items = getSelectedItems();
 
-  if (!customerName || !roomNumber) {
-    statusText.textContent = "Sila isi customer name dan room number.";
+  if (!items.length) {
+    statusText.textContent = "Pilih sekurang-kurangnya satu minuman.";
     statusText.className = "status-text error";
     return;
   }
 
-  if (!cart.length) {
-    statusText.textContent =
-      "Tambah sekurang-kurangnya satu item ke dalam cart.";
+  if (!customerType || !roomNumber) {
+    statusText.textContent = "Sila pilih kategori dan isi no. bilik.";
     statusText.className = "status-text error";
     return;
   }
 
-  statusText.textContent = "Submitting cart...";
+  statusText.textContent = "Submitting order...";
   statusText.className = "status-text";
 
   const payload = {
-    customerName,
+    customerName: customerType,
     roomNumber,
-    items: cart.map((item) => ({
-      drinkId: item.drinkId,
-      quantity: item.quantity,
-    })),
+    items,
   };
 
   try {
@@ -164,19 +162,19 @@ orderForm.addEventListener("submit", async (event) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || "Unable to submit cart.");
+      throw new Error(data.error || "Unable to submit order.");
     }
 
+    cart = {};
     orderForm.reset();
-    quantityInput.value = 1;
-    drinkSelect.selectedIndex = 0;
-    cart = [];
-    renderCart();
-    updateTotal();
+    renderDrinks();
+    updateTotals();
+    stepTwo.style.display = "none";
+    stepOne.style.display = "block";
+    stepPillTwo.classList.remove("active");
+    stepPillOne.classList.add("active");
 
-    statusText.textContent =
-      `Cart dihantar untuk ${payload.customerName}. ` +
-      `${data.summary.totalItems} item, jumlah ${formatCurrency(data.summary.totalAmount)}.`;
+    statusText.textContent = `Order berjaya dihantar. ${data.summary.totalItems} item, jumlah ${formatCurrency(data.summary.totalAmount)}.`;
     statusText.className = "status-text success";
   } catch (error) {
     statusText.textContent = error.message;
@@ -185,6 +183,6 @@ orderForm.addEventListener("submit", async (event) => {
 });
 
 loadMenu().catch(() => {
-  statusText.textContent = "Unable to load the menu.";
+  statusText.textContent = "Unable to load menu.";
   statusText.className = "status-text error";
 });

@@ -8,113 +8,75 @@
   </head>
   <body>
     <main class="page-shell">
-      <section class="hero">
-        <article class="hero-card">
-          <span class="eyebrow">Fresh Drink Orders</span>
-          <h1>Order your drinks in a few taps.</h1>
-          <p class="lead">
-            Choose your favorite drink flavor, enter your room number, set your
-            quantity, and confirm the total payment before sending the order.
-          </p>
-        </article>
-
-        <article class="hero-card">
-          <div class="panel-header">
-            <div>
-              <h2>Available Flavors</h2>
-              <p class="panel-subtitle">
-                Five ready-to-order options for your customers.
-              </p>
-            </div>
-          </div>
-          <div class="menu-grid" id="menuGrid"></div>
-        </article>
-      </section>
-
       <section class="panel">
         <div class="panel-header">
           <div>
-            <h2>Customer Order Form</h2>
+            <span class="eyebrow">Quick Drink Order</span>
+            <h1>Pilih minuman anda</h1>
             <p class="panel-subtitle">
-              All fields are required before an order can be submitted.
+              Tekan + atau - untuk pilih bilangan minuman, kemudian tekan Next.
             </p>
           </div>
         </div>
 
+        <div class="step-indicator">
+          <div class="step-pill active" id="stepPillOne">1. Pilih Minuman</div>
+          <div class="step-pill" id="stepPillTwo">2. Maklumat</div>
+        </div>
+
         <form id="orderForm" novalidate>
-          <div class="form-grid">
-            <div class="field">
-              <label for="customerName">Customer Name</label>
-              <input
-                id="customerName"
-                name="customerName"
-                type="text"
-                required
-                placeholder="Enter customer name"
-              />
-            </div>
-
-            <div class="field">
-              <label for="roomNumber">Room Number</label>
-              <input
-                id="roomNumber"
-                name="roomNumber"
-                type="text"
-                required
-                placeholder="Enter room number"
-              />
-            </div>
-
-            <div class="field">
-              <label for="drinkId">Drink Flavor</label>
-              <select id="drinkId" name="drinkId"></select>
-            </div>
-
-            <div class="field">
-              <label for="quantity">Quantity</label>
-              <input
-                id="quantity"
-                name="quantity"
-                type="number"
-                min="1"
-                max="50"
-                value="1"
-              />
-            </div>
-          </div>
-
-          <div class="summary-bar">
-            <div>
-              <span class="summary-label">Current Item Total</span>
-              <strong class="summary-value" id="totalAmount">RM 0.00</strong>
-            </div>
-            <button class="secondary-btn" type="button" id="addToCartBtn">
-              Add to Cart
-            </button>
-          </div>
-
-          <div class="panel" style="margin-top: 18px; padding: 18px">
-            <div class="panel-header">
-              <div>
-                <h3>Cart</h3>
-                <p class="panel-subtitle">
-                  Customer boleh kumpul beberapa minuman sebelum submit.
-                </p>
-              </div>
-            </div>
-
-            <div id="cartItems" class="order-list"></div>
+          <div id="stepOne">
+            <div id="drinkCards" class="menu-grid"></div>
 
             <div class="summary-bar">
               <div>
-                <span class="summary-label">Cart Total</span>
+                <span class="summary-label">Total Order</span>
                 <strong class="summary-value" id="cartTotalAmount"
                   >RM 0.00</strong
                 >
               </div>
-              <button class="primary-btn" type="submit">
-                Submit All Orders
+              <button class="primary-btn" type="button" id="nextStepBtn">
+                Next
               </button>
+            </div>
+          </div>
+
+          <div id="stepTwo" style="display: none; margin-top: 20px">
+            <div class="form-grid">
+              <div class="field">
+                <label for="customerType">Kategori</label>
+                <select id="customerType" name="customerType" required>
+                  <option value="">Pilih kategori</option>
+                  <option value="Jawatan">Jawatan</option>
+                  <option value="Pelajar Biasa">Pelajar Biasa</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="roomNumber">No. Bilik</label>
+                <input
+                  id="roomNumber"
+                  name="roomNumber"
+                  type="text"
+                  required
+                  placeholder="Masukkan no. bilik"
+                />
+              </div>
+            </div>
+
+            <div class="summary-bar">
+              <div>
+                <span class="summary-label">Jumlah Bayaran</span>
+                <strong class="summary-value" id="finalTotalAmount"
+                  >RM 0.00</strong
+                >
+              </div>
+              <div class="action-row" style="margin-top: 0">
+                <button class="secondary-btn" type="button" id="backStepBtn">
+                  Back
+                </button>
+                <button class="primary-btn" type="submit">Submit</button>
+              </div>
             </div>
           </div>
 
